@@ -1,0 +1,33 @@
+---
+ - hosts: all
+   tasks:
+   - name: check if we can get metadata
+     uri:
+      url: http://169.254.169.254/latest/meta-data
+      timeout: 3
+      return_content: true
+     register: metadata_check
+     failed_when: False
+   - set_fact:
+      metadata: "{{metadata_check['content'].split('\n')}}"
+   - debug: var=metadata
+   - name: return individual metadata item
+     shell: curl http://169.254.169.254/latest/meta-data/{{item}}
+     args:
+      warn: no
+     register: indi_data
+     loop: "{{metadata}}"
+   - name: Getting the list through results 
+     set_fact:
+      new_meta: "{{indi_data.results}}"
+   - name: Copying the json results to the remote managed node  
+     copy:
+      content: "{{new_meta}}"
+      dest: "/tmp/myjson.json"
+   - name: Fetching the json file for parsing 
+     slurp:
+      src: /tmp/myjson.json
+     register: mymetadata
+   - name: "Output all data of json as it is"
+     debug:
+      msg: "{{ mymetadata['content'] | b64decode }}"
