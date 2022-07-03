@@ -8,23 +8,24 @@
       return_content: true
      register: metadata_check
      failed_when: False
-   - set_fact:
+   - name: Splitting the metadata_check output by newlines and creating a list to be stored in metadata
+     set_fact:
       metadata: "{{metadata_check['content'].split('\n')}}"
    - debug: var=metadata
-   - name: return individual metadata item
+   - name: Traversing the metadata list and return individual metadata item and store it in Indi_data fact
      shell: curl http://169.254.169.254/latest/meta-data/{{item}}
      args:
       warn: no
-     register: indi_data
+     register: individual_data
      loop: "{{metadata}}"
-   - name: Getting the list through results 
+   - name: Setting a new_meta fact which holds Results which is a list within the Indi_data which can be traversed to get individual metadata item. 
      set_fact:
-      new_meta: "{{indi_data.results}}"
-   - name: Copying the json results to the remote managed node  
+      new_meta: "{{individual_data.results}}"
+   - name: Copying the json results to a file on the remote managed node  
      copy:
       content: "{{new_meta}}"
       dest: "/tmp/myjson.json"
-   - name: Fetching the json file for parsing 
+   - name: Fetching the json file which can be later used for parsing 
      slurp:
       src: /tmp/myjson.json
      register: mymetadata
