@@ -16,7 +16,8 @@ How to Steps:
 4. Run the command ansible-playbook AWS_EC2_Instance_metadata.yml
 5. We can see the results as a JSON output and individual metadata item for each managed node.
 
- output snippet: Filtered Individual metadata of each node:
+ Output snippet: Filtered Individual metadata of each node:
+ ============================================================
 
 TASK [Display filtered individual metadata of each node as a list] ************************************************************************************************************************************************
 ok: [172.31.7.57] => {
