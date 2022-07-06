@@ -1,0 +1,28 @@
+---
+ - hosts: all
+   tasks:
+   - name: check if we can get metadata
+     uri:
+      url: http://169.254.169.254/latest/meta-data
+      timeout: 3
+      return_content: true
+     register: metadata_check
+     failed_when: False
+   - set_fact:
+      metadata: "{{metadata_check['content'].split('\n')}}"
+   - debug: var=metadata
+   - name: return individual metadata item
+     shell: curl http://169.254.169.254/latest/meta-data/{{item}}
+     args:
+      warn: no
+     register: individual_data_json
+     loop: "{{metadata}}"
+   - name: "Output all data of json as it is"
+     debug:
+      var: individual_data_json
+   - name: Get the filtered Individual Metadata of each node as a list
+     set_fact:
+      each_node_filtered_meta: "{{individual_data_json | json_query(\"results[*].stdout\")}}"
+   - name: Display filtered individual metadata of each node as a list
+     debug:
+      var: each_node_filtered_meta
